@@ -1,0 +1,5 @@
+def f(x:int) : int { 
+  x 
+}
+
+f(0)

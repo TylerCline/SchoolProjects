@@ -1,0 +1,10 @@
+if false then
+  let x = 3;
+  x
+else
+  if true then
+    let x = 27;
+    x + x
+  else
+    45
+    

@@ -1,0 +1,5 @@
+let x = 27;
+let y = 30;
+{ let z = 27; tt };
+let z = 30;
+z

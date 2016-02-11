@@ -1,0 +1,5 @@
+def even(x : int) : bool {
+    (x == 0) || (not (x < 0) && even(x-2))
+}
+
+even(101)

@@ -1,0 +1,5 @@
+def recur(x : int) : bool {
+    false || true || recur(x)
+}
+
+recur(3)

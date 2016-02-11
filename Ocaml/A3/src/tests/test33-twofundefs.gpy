@@ -1,0 +1,9 @@
+def f(x:int) : int { 
+  x
+}
+
+def g(x:int) : int {
+  x
+}
+
+g(f(3))
