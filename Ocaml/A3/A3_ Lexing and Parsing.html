@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>A3: Lexing and Parsing</title>
+  <meta charset="utf-8">
+  
+  <meta name="author" content="Gordon Stewart">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./A3_ Lexing and Parsing_files/normalize.css">
+  <link rel="stylesheet" type="text/css" href="./A3_ Lexing and Parsing_files/grid.css">
+  <link rel="stylesheet" type="text/css" href="./A3_ Lexing and Parsing_files/css">  
+  <style type="text/css">
+body {
+  margin: 24px auto;
+  padding: 0 24px;
+  max-width: 800px;
+  font-size: 14pt;
+  line-height: 20pt;
+  color: #333333;
+  font-family: 'Roboto', sans-serif;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.15); }
+
+pre code {
+  margin: 1.5em 0;
+  display: block; 
+}
+
+div.inset {
+  padding: 32px 32px;
+  background-color: #F0FFF0;
+}
+
+h1 {
+  font-size: 1.7em;
+  font-weight: 500; }
+  @media only screen and (max-width: 480px) {
+    h1 {
+      font-size: 1.4em; } }
+
+h2 {
+  font-size: 1.56em;
+  font-weight: 500; }
+  @media only screen and (max-width: 480px) {
+    h2 {
+      font-size: 1.0em; } }
+
+h3 {
+  font-size: 1.3em;
+  font-weight: 500; }
+
+hr {
+  height: 1px;
+  border: none;
+  background-color: #ddd; }
+
+a:link {
+  color: #547ab0; }
+
+a:visited {
+  color: #3a567d; }
+
+.top-level-full-width .centered {
+  margin: 0 auto; }
+
+.header-container h1 {
+  /*text-transform: uppercase;*/
+  font-family: 'Roboto Condensed', sans-serif;
+  margin: 0;
+  line-height: 100px;
+  text-indent: -4px;
+  font-size: 3.0em; }
+  @media only screen and (max-width: 480px) {
+    .header-container h1 {
+      font-size: 1.4em;
+      text-indent: 0;
+      line-height: 1; } }
+.header-container h2 {
+  text-transform: uppercase;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 300;
+  margin: 0;
+  line-height: 36px;
+  text-indent: 0px;
+  letter-spacing: 0.05px;
+  font-size: 1.48em; }
+  @media only screen and (max-width: 480px) {
+    .header-container h2 {
+      line-height: auto;
+      text-align: center;
+      font-size: 0.95em; } }
+
+small { 
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 0.9em;
+}
+
+year {
+  font-size: 100%;
+  text-align: right;
+  color: Gray;
+}  
+
+week {
+  font-size: 85%;
+  text-align: right;
+  padding-left: 3.5em;
+  color: SlateGray;
+}  
+
+topic {
+  font-size: 85%;
+  color: Black;
+  font-weight: bold;
+}  
+
+majortopic {
+  font-size: 115%;
+  color: Black;
+  font-weight: bold;
+  padding-left: 3.5em;
+}  
+
+note {
+  font-size: 85%;
+  color: MidnightBlue;
+  padding-left: 5em;
+}  
+  </style>
+</head>
+<body>
+
+<div class="top-level-full-width header-container">
+  <h1>  A3: Lexing and Parsing 
+      <a href="https://ocaml.org/">
+        <img src="./A3_ Lexing and Parsing_files/ocaml_logo2.jpg" width="40" alt="OCaml logo">
+      </a>
+  </h1>
+</div>
+
+<div class="top-level-full-width">
+  <div class="grid">
+    <div class="grid__col grid__col--3-of-4">  
+      <strong>Due:</strong> Tuesday, 2/23
+    </div>
+
+</div>
+
+<div class="top-level-full-width">
+<h2> Lexing and Parsing with ocamllex/Menhir </h2>
+
+<a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/grumpy-spec.txt">Grumpy</a> is a small imperative 
+programming language. For example:
+<pre>  def fact(x : int) : int {
+      if x == 0 then 1
+      else if x == 1 then 1 
+           else x * fact(x - 1)
+  }
+  fact(4)
+</pre>
+defines a Grumpy function
+<pre>  def fact(x : int) : int { ... }
+</pre>
+the computes the factorial of <tt>x</tt>.
+The final line of the program calls <tt>fact</tt>
+on the integer 4, with result 24. You'll notice that function-call 
+syntax in Grumpy follows C style rather than OCaml style.
+
+<p>In general, every Grumpy program consists of a number of 
+function definitions followed by an expression (which may 
+call one or more of the defined functions).
+</p><pre>  def f(...) : ... { ... }
+  def g(...) : ... { ... }
+  ...
+  def z(...) : ... { ... }
+  ... some result expression here ...
+</pre>
+
+<p>
+Here's a second example that illustrates a couple additional 
+features of Grumpy: mutable references and variable scope:
+</p><pre>  def f(x:int, y:bool) : int {   // -+ x and y go into scope
+    let z = ref x;               // -+ z goes into scope
+    {                            //  |
+      let w = !z;                // ---+ w goes into scope
+      z := w + 1                 //  | |
+    };                           // ---+ w goes out of scope
+    !z + 1                       //  |
+  }                              // -+ x,y, and z go out of scope
+  f(3, false)
+</pre>
+The code above defines a function <tt>f</tt> that takes an 
+<tt>int x</tt> and a <tt>bool y</tt> as arguments and returns
+an integer (type <tt>int</tt>). The first line 
+(<tt>let z = ref x</tt>) defines a let-bound <strong>mutable 
+reference</strong> <tt>z</tt> initialized to x. 
+
+<p>
+</p><div class="inset">
+Mutable references are similar to regular old mutable variables 
+in C or C++ (recall that, in general in OCaml, let-bound variables
+are immutable as we saw in Week 1). 
+One main difference is that, 
+instead of directly reading a mutable variable <tt>z</tt>
+(as in <tt>x = z</tt> in C), 
+you explicitly dereference it first using the <tt>!</tt> operator,
+as in <tt>!z + 1</tt> (this expression evaluates to 1 plus 
+whatever value is in memory at address <tt>z</tt>). Another 
+way to think of references: <tt>z</tt> is a pointer to a chunk of 
+memory initialized to <tt>x</tt>. Dereferencing <tt>!z</tt> is 
+like doing <tt>*z</tt> in C. Assignments to <tt>z</tt>, 
+as in <tt>z := w + 1</tt>, are like doing <tt>*z = w + 1</tt>.
+Unlike C pointers, OCaml references are type-safe (operations on 
+references won't go wrong at runtime).
+</div>
+
+<p>
+The function's second line introduces a new block scope
+with brackets <tt>{ ... }</tt>. 
+What's the effect of this scope? Any let-bound variables
+we declare inside it won't be accessible outside 
+the <tt>{ ... }</tt> (for example, it would be illegal 
+to refer to <tt>w</tt> in the expression <tt>!z + 1</tt>, 
+by rewriting it to something like <tt>!z + w</tt>). 
+
+</p><p>The overall result of the program is 5: Reference 
+<tt>z</tt> is initialized to 3. Variable <tt>w</tt> equals 3
+in the update to <tt>z := w + 1 (= 3 + 1 = 4)</tt>.
+Finally, the result of the function is the last sequenced expression 
+in its body, <tt>!z + 1 = 4 + 1 = 5</tt>.
+
+</p><p>
+</p><h3>Your job</h3>
+in this assignment is to implement a lexer and parser 
+for Grumpy, following the language syntax briefly overviewed 
+above and specified in BNF in 
+the <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/grumpy-spec.txt">Grumpy language specification</a>.
+<ul>
+<li>To implement the lexer, you'll be using 
+<a href="http://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html">ocamllex</a>, a lexer generator.</li>
+<li>To implement the parser, you'll be using 
+<a href="http://gallium.inria.fr/~fpottier/menhir/">Menhir</a>, a parser generator for LR(1) grammars.</li>
+</ul>
+<strong>Before doing any actual programming, read through 
+all the instructions below.</strong>
+ And as always, ask early on Piazza if 
+something's unclear!
+
+<h2>1. Download the assignment files</h2>
+
+First, download the <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/a3.tgz">assignment files</a>
+and unzip the resulting gzipped tarfile into a new directory.
+
+<pre>$ tar xzvf a3.tgz
+</pre>
+
+In the resulting directory <tt>src</tt> you'll find the following file structure:
+
+<pre>  src/               -- compiler source files
+    Makefile         -- the project Makefile
+    _tags            -- the tags file for ocamlbuild
+    AST.mli          -- language-independent abstract syntax stuff
+    AST.ml           -- associated helper functions
+    exp.mli          -- the definition of Grumpy's abstract syntax
+    exp.ml           -- associated functions
+    lexer.mll        -- ocamllex source file (Part 2)
+    parser.mly       -- Menhir source file (Part 3)
+    grumpy.ml        -- the toplevel compiler program    
+    tests/           -- test cases
+</pre>
+
+To build the project, type 
+<pre>$ make
+</pre>
+At this point, you may see a bunch of warnings of the form
+<pre>  ...
+  File "parser.mly", line 13, characters 15-20:
+  Warning: the token WHILE is unused.
+  Finished, 22 targets (0 cached) in 00:00:00.
+</pre>
+That's OK -- it's just Menhir telling you that the token <tt>WHILE</tt> 
+(defined in <tt>parser.mly</tt>), and so on for all the other 
+token kinds, is unused. 
+
+<p>
+</p><div class="inset">
+The build system assumes you have <tt>ocamlbuild</tt>, <tt>ocamlfind</tt>, Batteries, etc.
+installed on your machine -- follow the instructions in <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/0.html">A0</a>
+if you're still missing one of these packages.
+</div>
+
+<p>Now try running
+</p><pre>$ make test
+</pre>
+The tests won't pass yet of course (you haven't yet completed the assignment)
+so at this point you'll see a bunch of error messages of the form: 
+<pre>  $ make test
+  ocamlbuild -use-menhir -use-ocamlfind grumpy.native
+  Finished, 22 targets (22 cached) in 00:00:00.
+  cd tests &amp;&amp; ./run.sh
+  test01-unary-negation.gpy:1:2: Unexpected char: -
+  *** test01-unary-negation.gpy FAILED ***
+  test02-boolean-negation.gpy:1:2: Unexpected char: n
+  *** test02-boolean-negation.gpy FAILED ***
+  ... followed by many more ...
+</pre>
+To run the tests manually, you can do <tt>./run.sh</tt> from 
+within the <tt>tests</tt> directory. Within that directory, you'll also 
+find a bunch of sample Grumpy programs, for example:
+<pre>  ...
+  test50-fractal.gpy
+  test50-fractal.gpy.expected
+  test51-loopref.gpy
+  test51-loopref.gpy.expected
+</pre>
+Each Grumpy source program (extension <tt>.gpy</tt>) is paired 
+with a second file (extension <tt>.expected</tt>) that gives 
+that program's expected output. You won't use the expected output 
+in this assignment (you're just lexing and parsing) but the output
+files may be useful for understanding what each program does.
+
+<h2>2. lexer.mll</h2>
+
+Your job in this part is to build a lexer, using ocamllex, that 
+converts concrete programs such as the <tt>.gpy</tt> files in the
+<tt>tests</tt> directory into lists of tokens for consumption 
+by the parser you'll build in Part 3.
+
+<p>
+Start by opening <tt>lexer.mll</tt>; now navigate to the 
+(mostly empty) definition of 
+<tt>rule token</tt>. You'll see that, initially, it contains only 
+one rule: 
+</p><pre>  rule token = parse
+    | _
+    { raise (Syntax_err ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
+</pre>
+No matter what initial character
+the input file contains, <tt>token</tt> initially always
+raises a syntax exception "Unexpected char: ...".
+The wildcard <tt>"_"</tt> is the catch-all pattern; the 
+code within the braces beginning <tt>raise (Syntax_err ...)</tt>
+defines the action to perform in this case (raise an exception).
+
+<p> In general, each rule in the definition of <tt>token</tt> 
+pairs a regular expression (on the left) with a chunk of OCaml
+code (in braces on the right). For example, the following few rules 
+</p><pre>  rule token = parse
+      "//"               { comment lexbuf }
+    | ['0'-'9']+ as lxm  { INTCONST(Int32.of_string lxm) }
+    | ...
+
+  and comment = parse
+      ...                { ... do something ... }
+    | ...                
+</pre>
+lex comments (the definition of the <tt>comment</tt> rule is elided 
+above -- you'll have to implement it) and 
+32-bit integer constants. The <tt>comment</tt> rule is defined mutually recursively --
+you're free to add as many additional mutually recursive rules as you like.
+Note that when <tt>comment</tt> is called, we pass it the special argument
+<tt>lexbuf</tt>, which gives the current state of the lexer buffer. 
+
+<p>
+In the regexp-style pattern 
+</p><pre>  ['0'-'9']+ as lxm
+</pre>
+<tt>lxm</tt> is bound to whichever strings 
+match the regexp <tt>['0'-'9']+</tt> at lex time (that is, nonempty strings 
+of characters either 0, 1, ..., 9), and can be used 
+within the braces in the right-hand side of the rule. 
+For example, <tt>INTCONST(Int32.of_string lxm)</tt> returns
+an <tt>INTCONST</tt> token (standing for "integer constant") 
+containing the integer interpretation of <tt>lxm</tt>
+(<tt>Int32.of_string lxm</tt> converts <tt>lxm</tt> to the 
+corresponding 32-bit integer, e.g., <tt>Int32.of_string "45" = 45</tt>).
+
+<p>
+</p><div class="inset">
+Before beginning to actually code, peruse the <a href="http://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html">ocamllex manual</a> to learn more about 
+ocamllex and its syntax; or read through <tt>lexer.mll</tt> in the <a href="https://github.com/gstew5/cs4100-public/tree/master/calc-example">calc example</a> I showed in class.
+</div>
+
+<p>
+The definition of the tokens themselves is given in <tt>parser.mly</tt>.
+Here are the first few:
+</p><pre>  %token &lt;int32&gt; INTCONST
+  %token &lt;float&gt; FLOATCONST
+  %token &lt;bool&gt; BOOLCONST
+  %token &lt;string&gt; ID
+
+  %token DEF LET WHILE IF THEN ELSE REF INT FLOAT BOOL UNIT TT
+</pre>
+The first declarations define
+token types that contain values of OCaml types. For example,
+<tt>%token &lt;string&gt; ID</tt> defines a new token type <tt>ID</tt> 
+that contains OCaml strings. 
+The last line defines a bunch of token types that contain 
+no OCaml data. 
+
+<p>
+</p><div class="inset">
+<h3>A few hints</h3>
+<ul>
+<li>Your lexer is probably not done until you've defined a rule to produce
+each possible token. </li>
+<li>If your lexer reads <tt>eof</tt>, indicating the end of 
+the input buffer, you should return token <tt>EOF</tt>.</li>
+<li>You'll note from reading the <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/grumpy-spec.txt">
+Grumpy syntax specification</a> that 
+the language supports two styles of comments (both single-line and 
+nested multiline comments). To support nested multiline comments, 
+it may be useful to know that ocamllex rules (such as <tt>token</tt>,
+<tt>comment</tt>, etc.) can take additional parameters
+besides lexbuf. For example, you might define a new rule 
+<pre>  ...
+  and nested_comment level = parse
+    ...
+</pre>
+that takes a "nesting level" as its first argument....
+</li><li>To debug your lexer, try inserting print statements into 
+the <tt>{ ... }</tt> section of each rule. That is, write the 
+rule that lexes int constants not as:
+<pre>  | ['0'-'9']+ as lxm
+  { INTCONST(Int32.of_string lxm) }  
+</pre>
+but as:
+<pre>  | ['0'-'9']+ as lxm
+  { print_string "INT(";
+    let i = Int32.of_string lxm
+    in print_int (Int32.to_int i);
+       print_string ")";
+       INTCONST(i) }
+</pre>
+and likewise for the other rules you add (the print debug
+statements for tokens that don't contain OCaml values will
+be less complicated).
+</li>
+</ul>
+</div>
+
+<h2>3. parser.mly</h2>
+
+Read <tt>AST.mli</tt> and <tt>exp.mli</tt>. 
+
+<p>
+</p><div class="inset">
+<h3>OCaml Module Interfaces (<tt>.mli</tt> files)</h3>
+
+So far, we've mostly just seen OCaml files ending in <tt>.ml</tt>.
+Files with extension <tt>.mli</tt> define <strong>interfaces</strong>
+rather than implementations (sort of like <tt>.h</tt> files in C).
+They're similar to <tt>.ml</tt> files except that, instead of including
+function definitions they include include function types. The declaration
+of function types starts with <tt>val</tt> instead of <tt>let</tt>, as in:
+<pre>  (** Is type [t] an arithmetic type? *)
+  val is_arith_ty : ty -&gt; bool
+</pre>
+This declaration (and all other such declarations) must be accompanied by
+a corresponding function definition in <tt>AST.ml</tt>. 
+</div>
+
+<p>
+In the assignment code, interface files <tt>AST.mli</tt> and <tt>exp.mli</tt> 
+define the abstract syntax of the 
+Grumpy source language. The Grumpy lexer and parser convert 
+concrete Grumpy programs into values of type 
+<tt>(AST.ty, unit Exp.exp) AST.prog</tt>. 
+
+</p><p>
+</p><div class="inset">
+Part of your job in this 
+assignment is to "reverse engineer" this type, from the comments in 
+<tt>AST.mli</tt> and <tt>exp.mli</tt>, in order to figure out how to 
+build 
+(abstract syntax) 
+expressions, function definitions, and programs in the "semantic 
+actions" sections of your Menhir parser definition (that is, the chunks 
+of your parsing rules that sit on the right-hand side of each 
+nonterminal rule, within the curly braces). 
+</div>
+
+<p>
+</p><h3>
+Now
+</h3> Open <tt>parser.mly</tt> and complete the Menhir definition 
+of Grumpy's parser. 
+
+<p>
+In general, your job in this file is to add a number of new
+nonterminal rules to the Menhir grammar, corresponding to the 
+Grumpy syntax given in the <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/grumpy-spec.txt">Grumpy spec</a>.
+
+</p><p>
+Each such rule will look something like the following:
+</p><pre>  unop:
+  | MINUS
+    { UMinus }
+  | NOT
+    { UNot }
+  | DEREF
+    { UDeref }
+</pre>
+which defines a new nonterminal called <tt>unop</tt> (unary 
+operation) with 
+3 productions, one for each unary operation in the language. 
+The rule
+<pre>  | MINUS
+    { UMinus }
+</pre>
+says that the token <tt>MINUS</tt> is an acceptable unary 
+operator; when a <tt>MINUS</tt> is parsed, the rule returns, 
+as defined by the code within the braces <tt>{ ... }</tt>,
+the abstract syntax <tt>UMinus</tt>. 
+The whole abstract syntax of unary and binary operations
+(and of identifiers, function definitions, and whole programs) is
+given in file <tt>AST.mli</tt>. That file is quite heavily documented;
+see it for additional details.
+
+<p>
+Menhir rules can be more complicated. Here's a second example:
+</p><pre>  exp_list:
+  | l = separated_list(COMMA, exp)
+    { l }
+</pre>
+Assuming we've defined a nonterminal rule for expressions, 
+called <tt>exp</tt>,
+this rule defines a new nonterminal <tt>exp_list</tt> that 
+parses lists of expressions separated by <tt>COMMA</tt> tokens.
+
+<p>
+In the rule, the result of parsing this list (a list of 
+abstract syntax expressions) is bound to 
+variable <tt>l</tt>, which may then appear within the braces
+<tt>{ ... }</tt>. In this case, our <tt>exp_list</tt> rule just 
+returns <tt>l</tt>. However in general, a rule might do more
+interesting things with intermediate expressions. For more information
+on Menhir's special <tt>separated_list</tt> function (and other 
+useful functions), see Section 5.4 of the <a href="http://pauillac.inria.fr/~fpottier/menhir/manual.pdf">Menhir manual</a>,
+which describes Menhir's "Standard Library" (a collection of useful, 
+pre-defined parsing functions).
+
+</p><p>Here's one more:
+</p><pre>  arg:
+  | arg_id = id COLON arg_ty = mytype
+    { mk_tid arg_id arg_ty }
+</pre>
+This rule defines a nonterminal <tt>arg</tt> that parses function parameters
+of the form <tt>id COLON ty</tt>, e.g. <tt>x : int</tt>.
+It assumes we've already defined rules for the nonterminals <tt>id</tt>
+and <tt>mytype</tt>. Within the braces, we return the expression 
+<tt>mk_tid arg_id arg_ty</tt>, which constructs the abstract syntax corresponding
+to a typed identifier (an identifier together with it's type; see <tt>AST.mli</tt>
+for details).
+
+<p>
+</p><h3>Precedences and Associativity</h3>
+  Your parser should parse arithmetic, boolean, and other operators
+  according to the precedence and associativity tables given in the 
+  <a href="http://ace.cs.ohio.edu/~gstewart/courses/4100-16/hw/grumpy-spec.txt">Grumpy spec</a>. For example, multiplication
+  should bind tighter than addition.
+
+  <p>To encode precedence and associativity in Menhir, add precedence
+  and associativity directives to the top of your <tt>parser.mly</tt>
+  file (before the <tt>%%</tt>) as documented in Section 4 of 
+  the <a href="http://gallium.inria.fr/~fpottier/menhir/manual.pdf">Menhir manual</a>.
+
+  </p><p> For example, the following pair of directives encode that 
+  <tt>TIMES</tt> and <tt>DIV</tt> bind tighter than 
+  <tt>PLUS</tt> and <tt>MINUS</tt>:
+</p><pre>  %left PLUS MINUS
+  %left TIMES DIV
+</pre>
+  Precedence directives lower in the file (at higher line numbers) 
+  have higher priority (bind tighter) than those appearing earlier.
+  The <tt>%left</tt> indicates left associativity.
+
+<p>
+</p><div class="inset">
+<h3>Some hints</h3>
+<ul>
+  <li>You might have trouble defining a nonterminal called <tt>type</tt>.
+      Try calling it <tt>mytype</tt> instead.</li>
+  <li>Unary operations should bind tighter than binary ones. To encode this, 
+      you may find it useful to take advantage of Menhir's <tt>%prec</tt>
+      annotations (Section 4.2.1 of the Menhir manual). To best exploit 
+      <tt>%prec</tt>, try defining a new precedence
+      level associated with no particular 
+      nonterminal...<tt>%nonassoc unary_over_binary</tt>.
+  </li><li>In <tt>AST.mli</tt>, the abstract syntax for function definitions and 
+      whole programs is given via <a href="">record</a> types (think C structs
+      with pattern-matching). To get a handle on records, take a look at an 
+      online resource like <a href="https://realworldocaml.org/v1/en/html/records.html">Chapter 5 of Real World OCaml</a>. 
+</li></ul>
+</div>
+
+<h2>4. Test</h2>
+To gain confidence in your definitions, ensure that all test cases pass:
+<pre>$ make test
+</pre>
+We won't grade additional test cases, but you're very welcome to add some if you like.
+If you come up with what you think are particularly nasty tests (e.g., 
+exploiting corner cases), please email them to me (gstewart) or to Sam. 
+
+<h2>5. Submit</h2>
+
+Submit your <tt>lexer.mll</tt> and <tt>parser.mly</tt> on or before the due
+date, via Blackboard.
+
+<h2>6. Piazza</h2>
+Finally: 
+if the instructions in <tt>regexps.ml</tt> are unclear 
+ask for clarification on Piazza!
+
+</div>
+
+
+
+
+
+</div></body></html>
