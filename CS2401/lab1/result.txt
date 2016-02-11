@@ -1,0 +1,16 @@
+Script started on Wed Sep 03 17:39:16 2014
+bin01111% a.out
+Enter 2 Valid Times and a scalar--->4.30
+--->4.30
+--->2
+ Time 1 + Time 2 =9:00
+ Time 1 - time 2 =0:00
+ time 1 / your scalar =2:15
+ Time 1 * your scalar =9:00
+Time 1 and Time 2 are equal
+Time 2, 4:30Is less than Time 1, 4:30
+Time 1 <= Time 2 
+bin01111% ls
+Main.cc     Main.cc~    MyTime.cc   MyTime.cc~  MyTime.h    MyTime.h~   a.out       result.txt
+bin01111% gedit result.txt
+bin01111% 

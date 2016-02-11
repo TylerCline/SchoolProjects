@@ -1,0 +1,34 @@
+Script started on Thu Nov 06 11:46:35 2014
+bin00010% a.out
+Enter the Chore 
+sweep
+Enter the priority level 
+6
+Enter the Chore 
+garbage
+Enter the priority level 
+8
+Enter the Chore 
+games
+Enter the priority level 
+6 9
+Enter the Chore 
+dishes
+Enter the priority level 
+2
+Enter the Chore 
+mo  stuff
+Enter the priority level 
+4
+chore: sweep
+Priority level: 6
+chore: garbage
+Priority level: 8
+chore: games
+Priority level: 9
+chore: dishes
+Priority level: 2
+chore: stuff
+Priority level: 4
+bin00010% ^D
+script done on Thu Nov 06 11:47:15 2014

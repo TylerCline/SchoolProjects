@@ -1,0 +1,34 @@
+Script started on Wed Nov 12 16:00:56 2014
+bin01110% a.out
+Enter a positive number 23
+Even numbers counting to there
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+20
+22
+bin01110% a.out
+Enter a positive number 18
+Even numbers counting to there
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+bin01110% a.out
+Enter a positive number -2
+Even numbers counting to there
+bin01110% ^D
+script done on Wed Nov 12 16:01:16 2014

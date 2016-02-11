@@ -1,0 +1,57 @@
+Script started on Wed Oct 29 16:24:53 2014
+bin00010% a.out
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+1
+enter the thickness and cost per unit--> 2
+2
+enter the radius of the circle
+10
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+1
+enter the thickness and cost per unit--> 2
+2
+enter the radius of the circle
+20
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+1
+enter the thickness and cost per unit--> 2
+2
+enter the radius of the circle
+30
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+2
+enter the thickness and cost per unit--> 2
+2
+enter the length
+length-->10
+width-->10
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+3
+enter the thickness and cost per unit--> 2
+2
+enter in base 1 and 2 --> 5
+15
+enter the height --> 10
+Enter 1 to record a Circle.
+Enter 2 to record a Rectangle.
+Enter 3 to record a Trapezoid. 
+Enter 4 to quit and see total for the box.
+4
+The total cost of this box of blocks is $18392.92
+bin00010% ^D
+script done on Wed Oct 29 16:25:49 2014

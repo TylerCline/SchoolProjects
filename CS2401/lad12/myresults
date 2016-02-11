@@ -1,0 +1,9 @@
+Script started on Thu Nov 20 12:30:29 2014
+bin00111% a.out
+Enter a string:go bobcats
+Now enter two numbers that are within the bounds of the string.3
+7
+This is how your words look now:
+go acbobts
+bin00111% ^D
+script done on Thu Nov 20 12:30:42 2014

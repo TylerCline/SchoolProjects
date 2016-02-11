@@ -1,0 +1,7 @@
+Script started on Wed Oct 01 16:29:07 2014
+bin00010% a.out
+Now showing list One:
+Charlie  Lisa  Drew  Derrick  AJ  Bojian  Enter a name to search:AJ
+That name is stored at address: 0x8062ea8
+Drew  Derrick  AJ  Bojian  Charlie  Lisa  bin00010% ^D
+script done on Wed Oct 01 16:29:19 2014

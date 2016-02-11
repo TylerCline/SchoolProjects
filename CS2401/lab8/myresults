@@ -1,0 +1,57 @@
+Script started on Wed Oct 22 17:02:00 2014
+bin00010% a.out
+Type in the expression
+
+12 679 5 + 4 * 8 / +
+354
+
+enter 'n' to stop
+
+m
+Type in the expression
+
+23 6    34 6 + 16 * 18 = -
+622
+
+enter 'n' to stop
+
+m
+Type in the expression
+
+12 6 - 8 + 7 * +
+not enough elements
+
+Type in the expression
+
+56 78 84 + 33 *
+Error: too many elements
+
+enter 'n' to stop
+
+34 67 8 + 4 * 7 / +
+Type in the expression
+
+while(!nums.empty())
+         {nums.pop();}enter 'n' to stop
+
+34 67 8 + 4 * 7 / +
+Type in the expression
+
+34 67 8 + 4 * 7 / +
+76
+
+enter 'n' to stop
+
+54 9 + 33 * 5 -               m
+Type in the expression
+
+54 6 + 34 * 18 -
+2022
+
+enter 'n' to stop
+
+n
+bin00010% ^C
+bin00010% ls
+Untitled 1   Untitled 1~  a.out        main.cc      main.cc~     myresults
+bin00010% 

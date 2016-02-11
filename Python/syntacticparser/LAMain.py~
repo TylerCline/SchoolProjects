@@ -1,0 +1,80 @@
+import LexicalAnalyzer
+expression = ' '
+"""while expression != 'q':
+	expression = input('->')
+	la = LexicalAnalyzer.LexicalAnalyzer(expression)
+	start()"""
+
+def error(token):
+    if token == 'UNKNOWN':
+        return("Lexical Error! " + la.nextLexeme_ + " is not a valid character for this grammar")
+
+    else:
+        return("Syntactic Error!")
+        
+def factor(): 
+    if la.nextToken_ == "NUMBER":
+        result = int(la.nextLexeme_)
+        la.lex()
+        return result
+    
+    elif la.nextToken_ == "LPAR":
+        la.lex()
+        expr()
+        
+        if la.nextToken_ == "RPAR":
+            la.lex()
+        else:
+            print(error(la.nextToken_))
+            exit()
+            
+    elif la.nextToken_ == "MINUS":
+        la.lex()
+        result = - factor()
+        
+    else:
+        print(error(la.nextToken_))
+        exit()
+        
+def term():
+    result = factor()
+    while la.nextToken_ == "STAR" or la.nextToken_ == "SLASH" or la.nextToken_ == 'CARRET':
+        
+        if la.nextToken_ == 'CARRET':
+            la.lex()
+            result = result ** factor()
+            
+        elif la.nextToken_ == 'SLASH':
+            la.lex()
+            result = result / factor()
+            
+        elif la.nextToken_ == 'STAR':
+            la.lex()
+            result = result * factor()
+        
+    return result
+               
+def expr():
+    
+    result = term()
+    while la.nextToken_ == "PLUS" or la.nextToken_ == "MINUS" :
+        
+        if la.nextToken_ == "PLUS":
+            la.lex()
+            result = result + term()
+            
+        else:
+            la.lex()
+            result = result - term()
+            
+    return result
+
+expression = ' '
+while expression != 'q':
+	expression = input('->')
+	la = LexicalAnalyzer.LexicalAnalyzer(expression)
+	print(expr())
+	# while la.nextToken_ != 'EOF' and expression is not ' ':
+	#	print(expr())
+	#	la.lex()
+    

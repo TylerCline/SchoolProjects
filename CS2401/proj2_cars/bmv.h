@@ -1,0 +1,40 @@
+//***************************************
+//BMV Class header file
+//Tyler Cline
+//Ohio Unversity  2014
+//***************************************
+
+#include<iostream>
+#include<fstream>
+#include"vehicle.h"
+#ifndef BMV_H
+#define BMV_H
+
+class bmv{
+ public:
+
+     bmv();
+     ~bmv();
+     bmv(const bmv& other);
+    // void load_from_file(std::istream& ins);
+     void save_to_file(std::ostream& out);
+     void start();
+     bool is_item();
+     vehicle& current();
+     void advance();
+     void insert(vehicle& car);
+     void attach(vehicle& cars);
+     void show_item(std::string& license_num);
+     void remove_current();
+     void random_car();
+     std::size_t size();
+     void resize();
+
+ private:
+     std::size_t capacity;
+     vehicle *ptr;
+     std::size_t used;
+     int current_item;
+
+};
+#endif

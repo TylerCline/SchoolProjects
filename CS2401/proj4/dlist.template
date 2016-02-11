@@ -1,0 +1,250 @@
+ //**************************************
+//Template for doubley linked list class
+//Tyler Cline
+//Ohio university 2014
+//**************************************
+
+#include<iostream>
+using namespace std;
+
+//constructor
+template<class T>
+dlist<T>::dlist()
+{
+ head = NULL;
+ tail = NULL;
+}
+//destructor
+template<class T>
+dlist<T>::~dlist()
+{
+ node<T> *rmptr;
+ while(head != NULL)
+     {
+      rmptr = head;
+      head = head->nxt();
+      delete rmptr;
+     }
+}
+
+//copy constructor
+template<class T>
+dlist<T>::dlist(const dlist<T>& other)
+{
+  node<T> *cursor = other.head;
+  head = NULL;
+  tail = NULL;
+  while(cursor != NULL)
+   {
+     rear_insert(cursor->data());
+     cursor = cursor->nxt();
+   }
+}
+
+
+//overloaded assignment
+template<class T>
+void dlist<T>::operator = (const dlist<T>& other)
+{
+ if(this == &other)
+    {return;}
+
+ node<T> *tmp;
+    while(head != NULL)
+     {
+       tmp = head;
+       head = head->nxt();
+       delete tmp;
+
+     }
+
+
+    if(other.head == NULL && other.tail==NULL)
+        head = tail = NULL;
+    else
+     { node<T> *cursor = other.head;
+       head = NULL;
+       tail = NULL;
+          while(cursor != NULL)
+            {
+             rear_insert(cursor->data());
+             cursor = cursor->nxt();
+            }
+     }
+}
+
+
+template<class T>
+void dlist<T>::front_insert(const T& item)
+{
+ if(head==NULL)
+  {
+    head = new node<T>;
+    head->set_data(item);
+    head->set_nxt(NULL);
+    head->set_prev(NULL);
+    tail = head;
+
+  }
+ else
+  {
+   head->set_prev(new node<T>);
+   head->prev()->set_nxt(head);
+   head = head->prev();
+   head->set_data(item);
+   head->set_prev(NULL);
+  }
+}
+
+template<class T>
+void dlist<T>::rear_insert(const T& item)
+{
+ if(tail==NULL)
+  {
+    tail = head = new node<T>;
+    tail->set_data(item);
+    tail->set_nxt(NULL);
+    tail->set_prev(NULL);
+    head = tail;
+  }
+ else
+  {
+   tail->set_nxt(new node<T>);
+   tail->nxt()->set_prev(tail);
+   tail = tail->nxt();
+   tail->set_data(item);
+   tail->set_nxt(NULL);
+  }
+}
+
+
+template<class T>
+void dlist<T>::front_remove()
+{
+if(head->nxt() == NULL && head->prev() == NULL)
+   {head = NULL;
+    tail = NULL;}
+else
+ {
+  node<T> *rmptr = head;
+  head = head->nxt();
+  head->set_prev(NULL);
+  delete rmptr;
+ }
+}
+
+template<class T>
+void dlist<T>::rear_remove()
+{
+
+ if(tail->prev() == NULL && tail->nxt() == NULL)
+   {tail=NULL;
+    head=NULL;}
+
+ else
+ {
+  node<T>* rmptr = tail;
+  tail = tail->prev();
+  tail->set_nxt(NULL);
+  delete rmptr;
+ }
+}
+
+template<class T>
+void dlist<T>::show()
+{
+ for(node<T> *cursor = head; cursor != NULL; cursor = cursor->nxt())
+  {
+     cout<<cursor->data()<<" ";
+  }
+}
+
+template <class T>
+void dlist<T>::reverse_show()
+{
+ for(node<T> * cursor = tail; cursor != NULL; cursor = cursor->prev())
+    {
+      cout<<cursor->data()<<" ";
+    }
+}
+
+
+template<class T>
+void dlist<T>::insert_before(iterator it, T item)
+{
+  node<T> *tmp = it.ptr;
+  node<T> *before;
+
+  if(head == NULL || tmp == NULL)
+     front_insert(item);
+
+  else{
+     before = tmp->prev();
+     tmp->set_prev(new node<T>);
+     tmp->prev()->set_nxt(tmp);
+     tmp = tmp->prev();
+     before->set_nxt(tmp);
+     tmp->set_data(item);
+     tmp->set_prev(before);
+   }
+}
+
+template<class T>
+void dlist<T>::insert_after(iterator it, T item)
+{ node<T> *tmp = it.ptr;
+  node<T> *front;
+
+ if (tail==NULL || tmp->nxt()==NULL)
+    rear_insert(item);
+ else
+   {
+    front = tmp->nxt();
+    tmp->set_nxt(new node<T>);
+    tmp->nxt()->set_prev(tmp);
+    tmp = tmp->nxt();
+    front->set_prev(tmp);
+    tmp->set_data(item);
+    tmp->set_nxt(front);
+   }
+}
+
+template<class T>
+void dlist<T>::remove(iterator it)
+{
+ node<T> *tmp = it.ptr;
+ node<T> *dismantle;
+
+ if(dismantle==head)
+   {
+     dismantle = head;
+     head = head->nxt();
+     delete dismantle;
+   }
+
+else if(dismantle==tail)
+   {
+     dismantle = tail;
+     tail = tail->prev();
+     delete dismantle;
+   }
+
+else
+    {
+     dismantle = tmp;
+     tmp = tmp->nxt();
+     tmp->set_prev(dismantle->prev());
+     delete dismantle;
+    }
+}
+
+template<class T>
+int dlist<T>::size()
+{  int count = 0;
+   for(node<T> *i = head; i != NULL; i = i->nxt())
+      {count++;}
+ return count;
+}
+
+
+
+
