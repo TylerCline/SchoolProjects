@@ -1,0 +1,46 @@
+### Starting build.
+# Target: grumpy.ml.depends, tags: { extension:ml, file:grumpy.ml, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules grumpy.ml > grumpy.ml.depends # cached
+# Target: AST.mli.depends, tags: { extension:mli, file:AST.mli, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules AST.mli > AST.mli.depends # cached
+# Target: AST.cmi, tags: { byte, compile, extension:mli, file:AST.mli, interf, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlc -c -package batteries -o AST.cmi AST.mli # cached
+# Target: exp.mli.depends, tags: { extension:mli, file:exp.mli, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules exp.mli > exp.mli.depends # cached
+# Target: exp.cmi, tags: { byte, compile, extension:mli, file:exp.mli, interf, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlc -c -package batteries -o exp.cmi exp.mli # cached
+# Target: lexer.mll, tags: { extension:mll, file:lexer.mll, lexer, ocaml, ocamllex, package(batteries), quiet, traverse }
+/home/tcline/.opam/4.02.1/bin/ocamllex.opt -q lexer.mll # cached
+# Target: lexer.ml.depends, tags: { extension:ml, file:lexer.ml, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules lexer.ml > lexer.ml.depends # cached
+# Target: parser.mly.depends, tags: { extension:mly, file:parser.mly, menhir_ocamldep, ocaml, ocamldep, package(batteries), quiet, traverse }
+menhir --raw-depend --ocamldep 'ocamlfind ocamldep -modules' parser.mly > parser.mly.depends # cached
+# Target: parser.mly, tags: { byte, compile, extension:mly, file:parser.mly, menhir, ocaml, package(batteries), parser, quiet, traverse }
+menhir --ocamlc 'ocamlfind ocamlc -package batteries' --infer parser.mly # cached
+# Target: parser.mli.depends, tags: { extension:mli, file:parser.mli, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules parser.mli > parser.mli.depends # cached
+# Target: parser.cmi, tags: { byte, compile, extension:mli, file:parser.mli, interf, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlc -c -package batteries -o parser.cmi parser.mli # cached
+# Target: lexer.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:lexer.cmo, file:lexer.ml, implem, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlc -c -package batteries -o lexer.cmo lexer.ml # cached
+# Target: grumpy.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:grumpy.cmo, file:grumpy.ml, implem, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlc -c -package batteries -o grumpy.cmo grumpy.ml # cached
+# Target: AST.ml.depends, tags: { extension:ml, file:AST.ml, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules AST.ml > AST.ml.depends # cached
+# Target: AST.cmx, tags: { compile, extension:cmx, extension:ml, file:AST.cmx, file:AST.ml, implem, native, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlopt -c -package batteries -o AST.cmx AST.ml # cached
+# Target: exp.ml.depends, tags: { extension:ml, file:exp.ml, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules exp.ml > exp.ml.depends # cached
+# Target: exp.cmx, tags: { compile, extension:cmx, extension:ml, file:exp.cmx, file:exp.ml, implem, native, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlopt -c -package batteries -o exp.cmx exp.ml # cached
+# Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, package(batteries), quiet, traverse }
+ocamlfind ocamldep -package batteries -modules parser.ml > parser.ml.depends # cached
+# Target: parser.cmx, tags: { compile, extension:cmx, extension:ml, file:parser.cmx, file:parser.ml, implem, native, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlopt -c -package batteries -o parser.cmx parser.ml # cached
+# Target: lexer.cmx, tags: { compile, extension:cmx, extension:ml, file:lexer.cmx, file:lexer.ml, implem, native, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlopt -c -package batteries -o lexer.cmx lexer.ml # cached
+# Target: grumpy.cmx, tags: { compile, extension:cmx, extension:ml, file:grumpy.cmx, file:grumpy.ml, implem, native, ocaml, package(batteries), quiet, traverse }
+ocamlfind ocamlopt -c -package batteries -o grumpy.cmx grumpy.ml # cached
+# Target: grumpy.native, tags: { dont_link_with, extension:native, file:grumpy.native, link, native, ocaml, package(batteries), program, quiet, traverse }
+ocamlfind ocamlopt -linkpkg -package batteries AST.cmx exp.cmx parser.cmx lexer.cmx grumpy.cmx -o grumpy.native # cached
+# Compilation successful.

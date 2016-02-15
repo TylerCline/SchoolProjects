@@ -1,9 +1,9 @@
 if false then
-  let x = 3;
+  let x = 3 in
   x
 else
   if true then
-    let x = 27;
+    let x = 27 in
     x + x
   else
     45

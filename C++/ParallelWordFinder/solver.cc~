@@ -9,6 +9,7 @@ vector<pair<int, int> > CircleTheWordSolver::word_locations(
          vector<string> &wordlist)
 { 
   vector <pair<int, int > > loc;
+  vector <pair<int, int > > temp;
   int cntr = puzzle[0].size();
   int wordl = wordlist.size();
   string word;
@@ -16,17 +17,39 @@ vector<pair<int, int> > CircleTheWordSolver::word_locations(
   bool found = true; 
 
   for(int k = 0; k < wordl; k++)
-    { found = false;
+  { found = false;
       word = wordlist[k];
       for(int x = 0; x < cntr; x++)
-	{ 
+      { 
 	  for(int y = 0; y < cntr; y++)
-	    { 
-	      if (puzzle[x][y] == word[0])
-		{
-                 //*****************Verticle and horizontal Cecking*************//
-                 //Check down
-		  for(int i = 0; i < word.size(); i++)
+	  { 
+	      if(puzzle[x][y] == word[0])
+              {
+                 if(found = true)
+                   continue;
+                 else if(found = false)
+                 {
+                     temp.push_back(make_pair(x, y));
+                     found = true;
+                 }
+                 else if(x = cntr - 1 && found == false)
+                     temp.push_back(make_pair(-1, -1));
+             }
+          }
+      }
+  }
+/*
+  for(int k = 0; k < wordl; k++)
+{
+     word = wordlist[k];
+     int x = temp[k].first;
+     int y = temp[k].second;
+     int trueCount = 0;
+ 
+     if(x == (-1) && y == (-1)){
+       loc.push_back(make_pair(x, y));
+     }
+		 for(int i = 0; i < word.size(); i++)
                     {
 			if((y+i) < cntr)
                         {
@@ -162,12 +185,11 @@ vector<pair<int, int> > CircleTheWordSolver::word_locations(
 			   }
 			}
                     }
-		 trueCount = 0;
-		}	
-	    }
-	}
-      if(found == false)
-        loc.push_back(make_pair(-1,-1));
-    }
+
+  }*/
 return loc;
 }
+      
+
+
+              

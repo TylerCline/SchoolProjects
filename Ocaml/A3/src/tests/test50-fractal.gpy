@@ -1,11 +1,11 @@
 def show_density(i : int) : unit {
-  let ascii_space = 32;
-  let ascii_period = 46;
-  let ascii_star = 42;
-  let ascii_plus = 43;
-  let level0 = 2;
-  let level1 = 4;
-  let level2 = 8;
+  let ascii_space = 32 in
+  let ascii_period = 46 in
+  let ascii_star = 42 in
+  let ascii_plus = 43 in
+  let level0 = 2 in
+  let level1 = 4 in
+  let level2 = 8 in
   if i < level0 then putchar(ascii_star)
   else if i < level1 then putchar(ascii_plus)
        else if i < level2 then putchar(ascii_period)
@@ -17,22 +17,22 @@ def show_pixel(num_cols : float, //resolution in "number of columns", assumed no
                px : float,       //pixel x-coord
                py : float        //pixel y-coord
               ) : unit {
-  let xmin = -2.5;
-  let xmax = 1.0;
-  let ymin = -1.0;
-  let ymax = 1.0;
+  let xmin = -2.5 in
+  let xmax = 1.0 in
+  let ymin = -1.0 in
+  let ymax = 1.0 in
 
   /* scale [px] and [py] to range [xmin..xmax) and [ymin..ymax) respectively */
-  let x0 = xmin + px*(xmax-xmin)/num_cols;
-  let y0 = ymin + py*(ymax-ymin)/num_rows;
+  let x0 = xmin + px*(xmax-xmin)/num_cols in
+  let y0 = ymin + py*(ymax-ymin)/num_rows in
 
-  let x = ref 0.0;
-  let y = ref 0.0;
-  let i = ref 0;
-  let max_iters = 255;
+  let x = ref 0.0 in
+  let y = ref 0.0 in
+  let i = ref 0 in
+  let max_iters = 255 in
 
   while (!i < max_iters && (!x*!x + !y*!y < 4.0)) {
-    let xtemp = !x*!x - !y*!y + x0;
+    let xtemp = !x*!x - !y*!y + x0 in
     y := 2.0*!x*!y + y0;
     x := xtemp;
     i := !i + 1
@@ -41,17 +41,17 @@ def show_pixel(num_cols : float, //resolution in "number of columns", assumed no
 }
 
 def show_newline() : unit {
-  let ascii_cr = 13;
-  let ascii_lf = 10;
+  let ascii_cr = 13 in
+  let ascii_lf = 10 in
   putchar(ascii_cr);
   putchar(ascii_lf)
 }
 
 def mandelbrot() : unit {
-  let xend = 50.0;
-  let yend = 20.0;
-  let x = ref 0.0;
-  let y = ref 0.0;
+  let xend = 50.0 in
+  let yend = 20.0 in
+  let x = ref 0.0 in
+  let y = ref 0.0 in
 
   while (!y < yend) {
     while (!x < xend) {

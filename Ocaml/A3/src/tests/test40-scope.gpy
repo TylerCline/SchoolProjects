@@ -1,7 +1,7 @@
 def f(x:int, y:bool) : int {   // -+ x and y go into scope
-  let z = ref x;               // -+ z goes into scope
+  let z = ref x in             // -+ z goes into scope
   {                            //  |
-    let w = !z;                // ---+ w goes into scope
+    let w = !z in              // ---+ w goes into scope
     z := w + 1                 //  | |
   };                           // ---+ w goes out of scope
   !z + 1                       //  |
