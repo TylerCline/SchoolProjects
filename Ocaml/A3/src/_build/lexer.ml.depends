@@ -1,1 +1,1 @@
-lexer.ml: Lexing Parser Printf
+lexer.ml: Int32 Lexing Parser Printf
