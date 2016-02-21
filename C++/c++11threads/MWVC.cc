@@ -1,20 +1,23 @@
 //
-// File: MWVC.cc
+// File: Updated MWVC.cc
 // Purpose: This code finds the minimum weighted vertex cover in a graph by 
-// using brute force search.
-// Author: David W. Juedes
-// 
+// using brute force search. The algorithm is split into threads using c++ 11
+// threads and the future class.
+// Original Author: David Juedes
+// Update Author: Tyler Cline
+// Ohio University 2016
+
 #include <iostream>
 #include <vector>
 #include <set>
 #include <list>
 #include <sstream>
 #include <thread>
-
+#include <future>
 using namespace std;
 
-//Number of threads for the program
-static const int num_threads = 10;
+//Number of threads for the program using the hardware concurrency function
+static const int num_threads = std::thread::hardware_concurrency();
 //
 // isVertexCover: 
 //
@@ -32,7 +35,7 @@ bool isVertexCover(vector<list<int> > &adj_list,
   return true;
 }
 
-void min_weighted_vc(vector<list<int> > &adj_list,
+bool min_weighted_vc(vector<list<int> > &adj_list,
                      vector<double> & weights,
                      set<int> &min_set,    // Current max IS
                      double &prev_min )     // Current max weight) 
@@ -43,14 +46,34 @@ void min_weighted_vc(vector<list<int> > &adj_list,
     for (size_t j = 0;j<32;j++) {
       if ((i& (1<<j)) > 0) t.insert(j);
     }
-    if (isVertexCover(adj_list,t)) {
+    //This marks to beginning of the edited code. It utilizes the num_threads value 
+  //which was derived from the hardware_concurrency thread function
+    //Declare an array of future booleans
+    /*   future<bool> threads[num_threads];
+    //Iterate through the array of threads and initialize each spot to the function
+  //which now returns a boolean. each thread will run fully asynchronous
+    for(int i = 0; i < num_threads; ++i){
+      threads[i] = async(launch::async, isVertexCover, ref(adj_list), ref(t));
+    }
+    //Declare a second array t2 which holds double values
+    bool t1[num_threads];
+    //A loop to iterate through the future array to use the .get() member function
+  //to wait for each thread to finish getting the values
+    for(int i = 0; i < num_threads; ++i){
+      t1[i] = threads[i].get();
+    }
+    //test each spot to see if it is a vertiex cover
+    for(int i = 0; i < num_threads; ++i){*/
+    if (isVertexCover(adj_list, t) ){
       double w=0;
       for (set<int>::iterator p=t.begin();p!=t.end();++p) {
         w+=weights[*p];
       }
       if (w<prev_min) { prev_min = w; min_set = t;}
     }
-  }
+      //   }
+      }
+  return true;
 }
 
 int main() {
@@ -83,21 +106,26 @@ int main() {
       }
     }
   }
-
+ 
   double prev_min = sum;
   set<int> min_set;
-  //Declare an array of threads 
-  thread t[num_threads];
-  //Iterate through the array of threads and initialize each spot to the function
-  for(int i = 0; i < num_threads; ++i){
-      t[i] = std::thread(min_weighted_vc, ref(adj_list), ref(weights), ref(min_set), ref(prev_min));
-  }
-
-  //Wait for each thread to finish
-  for(int i = 0; i < num_threads; ++i){
-      t[i].join();
-  }
-
+  //This marks to beginning of the edited code. It utilizes the num_threads value 
+  //which was derived from the hardware_concurrency thread function
+    //Declare an array of future booleans
+     future<bool> threads[num_threads];
+    //Iterate through the array of threads and initialize each spot to the function
+  //which now returns a boolean. each thread will run fully asynchronous
+    for(int i = 0; i < num_threads; ++i){
+      threads[i] = async(launch::async, min_weighted_vc, ref(adj_list), ref(weights), ref(min_set), ref(prev_min));
+    }
+    //Declare a second array t2 which holds double values
+    bool t1[num_threads];
+    //A loop to iterate through the future array to use the .get() member function
+  //to wait for each thread to finish getting the values
+    for(int i = 0; i < num_threads; ++i){
+      t1[i] = threads[i].get();
+    }
+    // min_weighted_vc(adj_list,weights,min_set,prev_min);
   cout << "Weight of minimum VC = " << prev_min << endl;
   cout << "Best Set = " << endl;
   for (set<int>::iterator p = min_set.begin();
