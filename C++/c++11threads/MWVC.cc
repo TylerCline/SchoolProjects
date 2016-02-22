@@ -46,24 +46,6 @@ bool min_weighted_vc(vector<list<int> > &adj_list,
     for (size_t j = 0;j<32;j++) {
       if ((i& (1<<j)) > 0) t.insert(j);
     }
-    //This marks to beginning of the edited code. It utilizes the num_threads value 
-  //which was derived from the hardware_concurrency thread function
-    //Declare an array of future booleans
-    /*   future<bool> threads[num_threads];
-    //Iterate through the array of threads and initialize each spot to the function
-  //which now returns a boolean. each thread will run fully asynchronous
-    for(int i = 0; i < num_threads; ++i){
-      threads[i] = async(launch::async, isVertexCover, ref(adj_list), ref(t));
-    }
-    //Declare a second array t2 which holds double values
-    bool t1[num_threads];
-    //A loop to iterate through the future array to use the .get() member function
-  //to wait for each thread to finish getting the values
-    for(int i = 0; i < num_threads; ++i){
-      t1[i] = threads[i].get();
-    }
-    //test each spot to see if it is a vertiex cover
-    for(int i = 0; i < num_threads; ++i){*/
     if (isVertexCover(adj_list, t) ){
       double w=0;
       for (set<int>::iterator p=t.begin();p!=t.end();++p) {
@@ -71,7 +53,6 @@ bool min_weighted_vc(vector<list<int> > &adj_list,
       }
       if (w<prev_min) { prev_min = w; min_set = t;}
     }
-      //   }
       }
   return true;
 }
