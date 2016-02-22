@@ -21,8 +21,7 @@
 %start <(AST.ty, unit Exp.exp) AST.prog> prog
 
 %right SEMI
-%left OR 
-%left AND
+%left OR AND
 %nonassoc LT INT_EQ
 %left PLUS MINUS
 %left TIMES DIV
@@ -30,62 +29,79 @@
 
 %%
 
-(** NOTE: to complete the assignment, you will have to change
-    the definition of the prog rule given below. *)
+ty:
+  | INT		{ TyInt }
+  | FLOAT	{ TyFloat }
+  | BOOL	{ TyBool }
+  | t = ty REF	{ TyRef t }
+  | UNIT	{ TyUnit }
 
-%inline ty:
- |INT   {TyInt}
- |FLOAT {TyFloat}
- |BOOL  {TyBool}
- |REF   {TyRef ty}
- |UNIT  {TyUnit}
+unop:
+  | MINUS 	{ UMinus }
+  | NOT		{ UNot }
+  | DEREF	{ UDeref }
 
-%inline unop:
- |MINUS {UMinus}
- |NOT   {UNot}
- |DEREF {UDeref}
+binop:
+  | PLUS	{ BPlus }
+  | MINUS	{ BMinus }
+  | TIMES	{ BTimes }
+  | DIV		{ BDiv }
+  | AND		{ BAnd }
+  | OR		{ BOr }
+  | LT		{ BLt }
+  | INT_EQ	{ BIntEq }
+  | DEFEQ	{ BUpdate }
 
-%inline binop:
- |PLUS {BPlus}
- |MINUS {BMinus}
- |TIMES {BTimes}
- |DIV   {BDiv}
- |AND   {BAnd}
- |OR    {BOr}
- |LT    {BLt}
- |INT_EQ {BIntEq}
- |DEFEQ {BUpdate}
+
 
 exp:
- |LPAREN n = exp RPAREN {n}
- |LBRACE n = exp RBRACE {Escope n}
- |n = ID {EId id}
- |n = INTCONST {Eint n}
- |n = FLOATCONST {EFloat n}
- |n = BOOLCONST {if n = true then ETrue else EFalse}
- |exp SEMI c = exp {ESeq (BatString.to_list c)}
- |m = ID LPAREN n = exp RPAREN {ECall m (BatString.to_list n)}
- |REF n = exp {ERef n}
- |n = unop x = exp {EUnop (n, x)}
- |n = exp  x = binop a = exp {EBinop (x, n, a)}
- |IF n = exp THEN x = exp ELSE a = exp {EIf (n, x, a)}
- |WHILE x = exp LBRACE y = exp RBRACE {EWhile (x, y)}
- |LET z = ID EQ x = exp IN y = exp {ELet (z,x,y)}
- |TT  {EUnit}
+  | LPAREN ex = exp RPAREN
+	{start_of = $startpos;
+     	       end_of = $endpos;
+	       exp_of = ex.exp_of; 
+	       ety_of = ()
+        }
+ 	
+  | LBRACE ex = exp RBRACE
+	{start_of = $startpos;
+     	       end_of = $endpos;
+	       exp_of = (EScope ex);
+	       ety_of = ()
+        }
+  | ex = ID  {EId ex}
+  | ex = INTCONST {EInt ex}
+  | ex = FLOATCONST {EFloat ex}
+  | ex = BOOLCONST {if ex == TRUE then ETRue else EFalse}
+  | ex = exp SEMI exp
+	{start_of = $startpos;
+     	       end_of = $endpos;
+	       exp_of = (ESeq (BatString.to_list ex));
+	       ety_of = ()
+        }
+  | x = ID RPAREN ex = exp RPAREN {ECall (m, (BatString.to_list ex))}
+  | REF ex = exp  {ERef ex}
+  | ex = unop x = exp {EUnop (ex, x)}
+  | ex = exp x = binop e = exp {EBinop (x, ex, e)}
+  | IF ex = exp THEN x = exp ELSE y = exp  {EIf (ex, x, y)}
+  | WHILE ex = exp RBRACE x = exp LBRACE {EWhile (ex, x)}
+  | LET c = ID EQ x = exp IN y = exp  {ELet (c, x, y)}
+  | TT {EUnit}
 
-fundef:
-  |DEF ID LPAREN ID COLON x = ty RPAREN COLON z = ty LBRACE g = exp RBRACE {x, y, z, g}
-
+(*fundef:
+  | DEF x = ID RPAREN y = ID COLON z = ty COMMA LPAREN COLON RBRACE v = exp LBRACE
+    {start_of = $startpos;
+     end_of = $endpos;
+     exp_of = (ESeq ex);
+     ety_of = ()
+    }
+Not sure how to impliment this yet
+*)
 prog:
- | _ = INTCONST
+| a = exp EOF
   { {fundefs = [];
      result = {start_of = $startpos;
      	       end_of = $endpos;
 	       exp_of = EUnit;
 	       ety_of = ()}}
-   }
 
-
-
-	
-
+   } 
