@@ -99,7 +99,7 @@ int main() {
     for(int i = 0; i < num_threads; ++i){
       threads[i] = async(launch::async, min_weighted_vc, ref(adj_list), ref(weights), ref(min_set), ref(prev_min));
     }
-    //Declare a second array t2 which holds double values
+    //Declare a second array t2 which holds bool values
     bool t1[num_threads];
     //A loop to iterate through the future array to use the .get() member function
   //to wait for each thread to finish getting the values

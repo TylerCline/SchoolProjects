@@ -51,51 +51,131 @@ binop:
   | LT		{ BLt }
   | INT_EQ	{ BIntEq }
   | DEFEQ	{ BUpdate }
-
+id:
+  | x = ID {Id x}
 
 
 exp:
   | LPAREN ex = exp RPAREN
-	{start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = ex.exp_of; 
-	       ety_of = ()
-        }
+	{ex}
  	
   | LBRACE ex = exp RBRACE
-	{start_of = $startpos;
+	{let x = {start_of = $startpos;
      	       end_of = $endpos;
-	       exp_of = (EScope ex);
-	       ety_of = ()
-        }
-  | ex = ID  {EId ex}
-  | ex = INTCONST {EInt ex}
-  | ex = FLOATCONST {EFloat ex}
-  | ex = BOOLCONST {if ex == TRUE then ETRue else EFalse}
-  | ex = exp SEMI exp
-	{start_of = $startpos;
+	       exp_of = (ex);
+	       ety_of = ()} in
+         EScope x}
+  | ex = id  
+           {EId ex}
+  | ex = INTCONST 
+           {EInt ex}
+  | ex = FLOATCONST 
+           {EFloat ex}
+  | ex = BOOLCONST 
+           {if ex == true then ETrue else EFalse}
+  | ex = exp SEMI ey = exp
+     {let x = {start_of = $startpos;
      	       end_of = $endpos;
-	       exp_of = (ESeq (BatString.to_list ex));
-	       ety_of = ()
-        }
-  | x = ID RPAREN ex = exp RPAREN {ECall (m, (BatString.to_list ex))}
-  | REF ex = exp  {ERef ex}
-  | ex = unop x = exp {EUnop (ex, x)}
-  | ex = exp x = binop e = exp {EBinop (x, ex, e)}
-  | IF ex = exp THEN x = exp ELSE y = exp  {EIf (ex, x, y)}
-  | WHILE ex = exp RBRACE x = exp LBRACE {EWhile (ex, x)}
-  | LET c = ID EQ x = exp IN y = exp  {ELet (c, x, y)}
-  | TT {EUnit}
+	       exp_of = (ex);
+	       ety_of = ()} in
+      let y = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ey);
+          ety_of = ()} in
+      ESeq ([x]@[y])}
+  | i = id LPAREN ex = exp RPAREN 
+     {let x = {start_of = $startpos;
+     	       end_of = $endpos;
+	       exp_of = (ex);
+	       ety_of = ()} in
+      ECall (i, [x])}
+  | REF ex = exp  
+    {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ex);
+          ety_of = ()} in
+     ERef x}
+  | ex = unop y = exp 
+    {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (y);
+          ety_of = ()} in
+     EUnop(ex, x)}
+  | ex = exp ey = binop ez = exp 
+   {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ex);
+          ety_of = ()} in
+    let y = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ez);
+          ety_of = ()} in
+   EBinop(ey, x, y)}
+  | IF ex = exp THEN ez = exp ELSE ey = exp  
+   {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ex);
+          ety_of = ()} in
+    let y = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ez);
+          ety_of = ()} in
+    let z = 
+       { start_of = $startpos;
+         end_of = $endpos;
+         exp_of = (ey);
+         ety_of = ()}in
+    EIf(x, y, z)}
 
-(*fundef:
-  | DEF x = ID RPAREN y = ID COLON z = ty COMMA LPAREN COLON RBRACE v = exp LBRACE
+  | WHILE ex = exp LBRACE ey = exp RBRACE 
+      {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ex);
+          ety_of = ()} in
+    let y = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ey);
+          ety_of = ()} in
+    EWhile(x, y)}
+  | LET c = id EQ ex = exp IN ey = exp 
+   {let x = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ex);
+          ety_of = ()} in
+    let y = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (ey);
+          ety_of = ()} in
+    ELet(c, x, y)}
+  | TT {EUnit}
+  | UNIT {EUnit}
+  | i = id LPAREN ex = INTCONST RPAREN
+      {EInt ex}
+
+fundef:
+  | DEF x = ID RPAREN y = ID COLON z = ty LPAREN COLON  q = ty RBRACE v = exp LBRACE
+    {let ex = 
+        { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (v);
+          ety_of = ()} in    
+
     {start_of = $startpos;
      end_of = $endpos;
-     exp_of = (ESeq ex);
+     exp_of = ({nm = x; args = z; ret_ty = q; body = ex;})
      ety_of = ()
-    }
-Not sure how to impliment this yet
-*)
+    }}
 prog:
 | a = exp EOF
   { {fundefs = [];
@@ -105,3 +185,15 @@ prog:
 	       ety_of = ()}}
 
    } 
+(*| f = fundef x = exp a = ty v = exp EOF
+  {{let ex = { start_of = $startpos;
+          end_of = $endpos;
+          exp_of = (x);
+          ety_of = ()} in
+    fundefs = [(a, ex) f];
+    result = {start_of = $startpos;
+     	       end_of = $endpos;
+	       exp_of = EUnit;
+	       ety_of = ()}}
+
+   }*)
