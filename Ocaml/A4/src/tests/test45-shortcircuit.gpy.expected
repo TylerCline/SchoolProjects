@@ -1,0 +1,6 @@
+def recur(x : int) :
+ bool {
+ (((((false : bool) || (true : bool)) : bool) || (recur((x : int)) : bool)) : bool)
+}
+(recur((3 : int)) : bool)
+

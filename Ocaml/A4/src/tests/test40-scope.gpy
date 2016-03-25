@@ -1,0 +1,9 @@
+def f(x:int, y:bool) : int {   // -+ x and y go into scope
+  let z = ref x in             // -+ z goes into scope
+  {                            //  |
+    let w = !z in              // ---+ w goes into scope
+    z := w + 1                 //  | |
+  };                           // ---+ w goes out of scope
+  !z + 1                       //  |
+}                              // -+ x,y, and z go out of scope
+f(3, false)

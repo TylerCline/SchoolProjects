@@ -18,182 +18,127 @@
 
 %token LPAREN RPAREN LBRACE RBRACE SEMI EQ COLON COMMA EOF 
 
-%start <(AST.ty, unit Exp.exp) AST.prog> prog
-
+%nonassoc IN
+%nonassoc ELSE
 %right SEMI
-%left OR AND
+
+%nonassoc DEFEQ
+%nonassoc REF
+	  
+%left OR
+%left AND
 %nonassoc LT INT_EQ
 %left PLUS MINUS
 %left TIMES DIV
-%nonassoc NOT DEREF
+%nonassoc unary_over_binary
+
+%start <(AST.ty, unit Exp.exp) AST.prog> prog
 
 %%
 
-ty:
-  | INT		{ TyInt }
-  | FLOAT	{ TyFloat }
-  | BOOL	{ TyBool }
-  | t = ty REF	{ TyRef t }
-  | UNIT	{ TyUnit }
+mytype:
+| LPAREN ty = mytype RPAREN 
+  { ty }
+| INT  
+  { TyInt }
+| FLOAT
+  { TyFloat }
+| BOOL
+  { TyBool }
+| ty = mytype REF
+  { TyRef ty }
+| UNIT 
+  { TyUnit }
 
 unop:
-  | MINUS 	{ UMinus }
-  | NOT		{ UNot }
-  | DEREF	{ UDeref }
+| MINUS
+  { UMinus }
+| NOT
+  { UNot }
+| DEREF
+  { UDeref }
 
-binop:
-  | PLUS	{ BPlus }
-  | MINUS	{ BMinus }
-  | TIMES	{ BTimes }
-  | DIV		{ BDiv }
-  | AND		{ BAnd }
-  | OR		{ BOr }
-  | LT		{ BLt }
-  | INT_EQ	{ BIntEq }
-  | DEFEQ	{ BUpdate }
+%inline binop:
+| PLUS
+  { BPlus }
+| MINUS
+  { BMinus }
+| TIMES
+  { BTimes }
+| DIV
+  { BDiv }
+| AND
+  { BAnd }
+| OR
+  { BOr }
+| LT
+  { BLt }
+| INT_EQ
+  { BIntEq }
+| DEFEQ
+  { BUpdate }
+
 id:
-  | x = ID {Id x}
+| i = ID
+  { Id i }
 
+exp_list:
+| l = separated_list(COMMA, exp)
+  { l }
+  
+exp: 
+| e = raw_exp
+  { {start_of = $startpos; end_of = $endpos; exp_of = e; ety_of = ()} }
+| LPAREN e = exp RPAREN 
+  { e }
 
-exp:
-  | LPAREN ex = exp RPAREN
-	{ex}
- 	
-  | LBRACE ex = exp RBRACE
-	{let x = {start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = (ex);
-	       ety_of = ()} in
-         EScope x}
-  | ex = id  
-           {EId ex}
-  | ex = INTCONST 
-           {EInt ex}
-  | ex = FLOATCONST 
-           {EFloat ex}
-  | ex = BOOLCONST 
-           {if ex == true then ETrue else EFalse}
-  | ex = exp SEMI ey = exp
-     {let x = {start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = (ex);
-	       ety_of = ()} in
-      let y = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ey);
-          ety_of = ()} in
-      ESeq ([x]@[y])}
-  | i = id LPAREN ex = exp RPAREN 
-     {let x = {start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = (ex);
-	       ety_of = ()} in
-      ECall (i, [x])}
-  | REF ex = exp  
-    {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ex);
-          ety_of = ()} in
-     ERef x}
-  | ex = unop y = exp 
-    {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (y);
-          ety_of = ()} in
-     EUnop(ex, x)}
-  | ex = exp ey = binop ez = exp 
-   {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ex);
-          ety_of = ()} in
-    let y = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ez);
-          ety_of = ()} in
-   EBinop(ey, x, y)}
-  | IF ex = exp THEN ez = exp ELSE ey = exp  
-   {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ex);
-          ety_of = ()} in
-    let y = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ez);
-          ety_of = ()} in
-    let z = 
-       { start_of = $startpos;
-         end_of = $endpos;
-         exp_of = (ey);
-         ety_of = ()}in
-    EIf(x, y, z)}
+raw_exp:
+| n = INTCONST
+  { EInt n }
+| n = FLOATCONST
+  { EFloat n }
+| i = id
+  { EId i }
+| e1 = exp SEMI e2 = exp
+  { exp_seq e1 e2 }
+| i = id LPAREN el = exp_list RPAREN
+  { ECall(i, el) }
+| REF e = exp 
+  { ERef e }
+| u = unop e = exp %prec unary_over_binary
+  { EUnop(u, e) }
+| e1 = exp b = binop e2 = exp
+  { EBinop(b, e1, e2) }
+| IF e1 = exp THEN e2 = exp ELSE e3 = exp
+  { EIf(e1, e2, e3) }
+| LET i = id EQ e1 = exp IN e2 = exp
+  { ELet(i, e1, e2) }
+| LBRACE e = exp RBRACE
+  { EScope e }
+| TT
+  { EUnit }
+| b = BOOLCONST
+  { if b then ETrue else EFalse }
+| WHILE e1 = exp LBRACE e2 = exp RBRACE
+  { EWhile(e1, e2) }
 
-  | WHILE ex = exp LBRACE ey = exp RBRACE 
-      {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ex);
-          ety_of = ()} in
-    let y = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ey);
-          ety_of = ()} in
-    EWhile(x, y)}
-  | LET c = id EQ ex = exp IN ey = exp 
-   {let x = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ex);
-          ety_of = ()} in
-    let y = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (ey);
-          ety_of = ()} in
-    ELet(c, x, y)}
-  | TT {EUnit}
-  | UNIT {EUnit}
-  | i = id LPAREN ex = INTCONST RPAREN
-      {EInt ex}
-
+arg:
+| arg = id COLON arg_ty = mytype
+  { mk_tid arg arg_ty }			    
+  
+arg_list:
+| l = separated_list(COMMA, arg)
+  { l }		    
+  
 fundef:
-  | DEF x = ID RPAREN y = ID COLON z = ty LPAREN COLON  q = ty RBRACE v = exp LBRACE
-    {let ex = 
-        { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (v);
-          ety_of = ()} in    
+| DEF nm = id LPAREN args = arg_list RPAREN COLON ret_ty = mytype LBRACE body = exp RBRACE
+  { {nm; args; ret_ty; body} }
 
-    {start_of = $startpos;
-     end_of = $endpos;
-     exp_of = ({nm = x; args = z; ret_ty = q; body = ex;})
-     ety_of = ()
-    }}
 prog:
-| a = exp EOF
-  { {fundefs = [];
-     result = {start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = EUnit;
-	       ety_of = ()}}
+| fs = list(fundef) e = exp EOF
+  { {fundefs = fs; result = e} }
 
-   } 
-(*| f = fundef x = exp a = ty v = exp EOF
-  {{let ex = { start_of = $startpos;
-          end_of = $endpos;
-          exp_of = (x);
-          ety_of = ()} in
-    fundefs = [(a, ex) f];
-    result = {start_of = $startpos;
-     	       end_of = $endpos;
-	       exp_of = EUnit;
-	       ety_of = ()}}
 
-   }*)
+
+	
+

@@ -1,0 +1,5 @@
+def f(x:int, y:int) : bool { 
+  x==y 
+}
+
+f(1, 2.0)

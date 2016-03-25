@@ -1,0 +1,8 @@
+def f() :
+ unit {
+ ((let i = ((ref (10 : int)) : int ref) in ((while (((! (i : int
+ ref) : int) < (10 : int)) : bool) do
+ ((let j = ((ref (20 : int)) : int ref) in (tt : unit)) : unit) : unit); (tt : unit) : unit)) : unit)
+}
+(f() : unit)
+

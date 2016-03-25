@@ -1,0 +1,59 @@
+def show_density(i : int) :
+ unit {
+ ((let ascii_space = (32 : int) in ((let ascii_period = (46 : int) in
+ ((let ascii_star = (42 : int) in ((let ascii_plus = (43 : int) in
+ ((let level0 = (2 : int) in ((let level1 = (4 : int) in ((let level2 =
+ (8 : int) in ((if (((i : int) < (level0 : int)) : bool) then
+ (putchar((ascii_star : int)) : unit) else
+ ((if (((i : int) < (level1 : int)) : bool) then
+ (putchar((ascii_plus : int)) : unit) else
+ ((if (((i : int) < (level2 : int)) : bool) then
+ (putchar((ascii_period : int)) : unit) else
+ (putchar((ascii_space : int)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)
+}
+def show_pixel(num_cols : float, num_rows : float, px : float, py : float) :
+ unit {
+ ((let xmin = (- (2.500000 : float) : float) in ((let xmax =
+ (1.000000 : float) in ((let ymin = (- (1.000000 : float) : float) in
+ ((let ymax = (1.000000 : float) in ((let x0 =
+ (((xmin : float) + (((((px : float) * (((xmax : float) - (xmin : float)) : float)) : float) / (num_cols : float)) : float)) : float) in
+ ((let y0 =
+ (((ymin : float) + (((((py : float) * (((ymax : float) - (ymin : float)) : float)) : float) / (num_rows : float)) : float)) : float) in
+ ((let x = ((ref (0.000000 : float)) : float ref) in ((let y =
+ ((ref (0.000000 : float)) : float ref) in ((let i = ((ref (0 : int)) : int
+ ref) in ((let max_iters = (255 : int) in ((while (((((! (i : int
+ ref) : int) < (max_iters : int)) : bool) && (((((((! (x : float
+ ref) : float) * (! (x : float ref) : float)) : float) + (((! (y : float
+ ref) : float) * (! (y : float
+ ref) : float)) : float)) : float) < (4.000000 : float)) : bool)) : bool) do
+ ((let xtemp = (((((((! (x : float ref) : float) * (! (x : float
+  ref) : float)) : float) - (((! (y : float ref) : float) * (! (y : float
+  ref) : float)) : float)) : float) + (x0 : float)) : float) in ((((y : float
+  ref) := (((((((2.000000 : float) * (! (x : float
+  ref) : float)) : float) * (! (y : float
+  ref) : float)) : float) + (y0 : float)) : float)) : unit); (((x : float
+  ref) := (xtemp : float)) : unit); (((i : int ref) := (((! (i : int
+  ref) : int) + (1 : int)) : int)) : unit) : unit)) : unit) : unit); (show_density((! (i : int
+ ref) : int)) : unit) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)) : unit)
+}
+def show_newline() :
+ unit {
+ ((let ascii_cr = (13 : int) in ((let ascii_lf = (10 : int) in
+ ((putchar((ascii_cr : int)) : unit); (putchar((ascii_lf : int)) : unit) : unit)) : unit)) : unit)
+}
+def mandelbrot() :
+ unit {
+ ((let xend = (50.000000 : float) in ((let yend = (20.000000 : float) in
+ ((let x = ((ref (0.000000 : float)) : float ref) in ((let y =
+ ((ref (0.000000 : float)) : float ref) in (while (((! (y : float
+ ref) : float) < (yend : float)) : bool) do
+ ((while (((! (x : float ref) : float) < (xend : float)) : bool) do
+  ((show_pixel((xend : float), (yend : float), (! (x : float
+   ref) : float), (! (y : float ref) : float)) : unit); (((x : float
+   ref) := (((! (x : float
+   ref) : float) + (1.000000 : float)) : float)) : unit) : unit) : unit); (show_newline() : unit); (((x : float
+  ref) := (0.000000 : float)) : unit); (((y : float ref) := (((! (y : float
+  ref) : float) + (1.000000 : float)) : float)) : unit) : unit) : unit)) : unit)) : unit)) : unit)) : unit)
+}
+((mandelbrot() : unit); (show_newline() : unit) : unit)
+

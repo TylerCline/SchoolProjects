@@ -1,0 +1,8 @@
+def fib(x : int) :
+ int {
+ ((if (((x : int) == (0 : int)) : bool) then (0 : int) else
+ ((if (((x : int) == (1 : int)) : bool) then (1 : int) else
+ (((fib((((x : int) - (1 : int)) : int)) : int) + (fib((((x : int) - (2 : int)) : int)) : int)) : int)) : int)) : int)
+}
+(fib((11 : int)) : int)
+

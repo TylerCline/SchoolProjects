@@ -1,0 +1,5 @@
+def f(x : int, y : int) : bool {
+ (((x : int) == (y : int)) : bool)
+}
+(f((1 : int), (2 : int)) : bool)
+

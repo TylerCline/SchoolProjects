@@ -1,0 +1,9 @@
+
+((let x = ((ref (7 : int)) : int ref) in ((let y = ((ref (0 : int)) : int
+ref) in ((while (not (((! (x : int
+ref) : int) < (0 : int)) : bool) : bool) do
+((((x : int ref) := (((! (x : int
+ ref) : int) - (1 : int)) : int)) : unit); (((y : int ref) := (((! (y : int
+ ref) : int) + (1 : int)) : int)) : unit) : unit) : unit); (! (y : int
+ref) : int) : int)) : int)) : int)
+

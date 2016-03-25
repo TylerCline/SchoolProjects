@@ -1,0 +1,5 @@
+def f() : unit {
+ (tt : unit)
+}
+(f() : unit)
+

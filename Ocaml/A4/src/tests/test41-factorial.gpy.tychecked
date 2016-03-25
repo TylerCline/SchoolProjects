@@ -1,0 +1,8 @@
+def fact(x : int) :
+ int {
+ ((if (((x : int) == (0 : int)) : bool) then (1 : int) else
+ ((if (((x : int) == (1 : int)) : bool) then (1 : int) else
+ (((x : int) * (fact((((x : int) - (1 : int)) : int)) : int)) : int)) : int)) : int)
+}
+(fact((4 : int)) : int)
+

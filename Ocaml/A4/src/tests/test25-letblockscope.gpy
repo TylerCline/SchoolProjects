@@ -1,0 +1,5 @@
+let x = 27 in
+let y = 30 in
+{ let z = 27 in tt };
+let z = 30 in
+z

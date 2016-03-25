@@ -1,0 +1,6 @@
+def even(x : int) :
+ bool {
+ (((((x : int) == (0 : int)) : bool) || (((not (((x : int) < (0 : int)) : bool) : bool) && (even((((x : int) - (2 : int)) : int)) : bool)) : bool)) : bool)
+}
+(even((101 : int)) : bool)
+

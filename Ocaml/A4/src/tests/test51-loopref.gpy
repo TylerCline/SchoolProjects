@@ -1,0 +1,10 @@
+def f() : unit {
+  let i = ref 10 in
+  while !i < 10 {
+    let j = ref 20 in
+    tt
+  };
+  tt
+}
+
+f()

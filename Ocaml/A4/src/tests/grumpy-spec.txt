@@ -1,0 +1,366 @@
+Language Syntax
+~~~~~~~~~~~~~~
+
+Reserved Keywords
+
+  def let in while do end if then else ref not int bool true false unit tt
+
+Unary Operations
+
+   unop ::= -                  (* negation on integers *)
+          | not                (* boolean negation *)
+          | !                  (* dereference *)
+
+Binary Operations
+
+  binop ::= + | - | * | /     (* addition, subtraction, multiplication, and division *)
+          | && | ||           (* boolean conjunction, disjunction *)
+          | <                 (* less-than *)
+          | ==                (* integer equality *)
+          | :=                (* reference update *)
+
+Identifiers  
+
+   id ::= [a-z,A-Z]^+[_,a-z,A-Z,0-9]^*
+
+Integers 
+
+  num_int ::= [0-9]^+
+
+Floats
+
+  num_float ::= [0-9]^+.[0-9]^*
+
+Types 
+
+   ty ::= ( ty )                   (* parenthesized type *)
+        | int                      (* the type of 32-bit integers *)
+        | float                    (* the type of double-precision floats *)
+        | bool                     (* the type of booleans *)
+        | ty ref                   (* the type of references *)
+        | unit                     (* the "unit" type *)
+
+Expressions
+ 
+  exp ::= ( exp )                  (* parenthesized expression *)
+        | { exp }                  (* block-scoped expression *)
+        | id                       (* identifier *)
+        | num_int                  (* integer *)
+        | num_float                (* float *)
+        | true | false             (* the boolean constants *)
+        | exp; exp                 (* sequence two expressions *)
+        | id(exp1, ..., expN)      (* function call *)
+        | ref exp                  (* reference cell allocation *)
+        | unop exp                 (* apply a unary operation *)
+        | exp binop exp            (* apply a binary operation *)
+        | if exp then exp else exp (* conditionals *)
+        | while exp { exp }        (* while loops *)
+        | let id = exp in exp      (* let binding *)
+        | tt                       (* the unit value *)
+	| putchar(exp)             (* print an integer in the range [0..2^8-1]
+   			              to stdout *)
+
+Function Definitions
+
+  fundef ::= def id (id1:ty1, ..., idN:tyN) : ty { exp }
+
+Programs 
+
+    prog ::= fundef1 fundef2 ... fundefM exp
+
+
+Comments
+~~~~~~~
+
+  The language supports two styles of comments.
+
+  1. Single-line Comments
+  ========================
+
+    The character sequence "//" delimits the beginning of a single-line
+    comment. Single-line comments are ended by a newline character.
+
+    Example: 
+
+      def f(x : int) : int { //this is a comment
+        ...                  //this is another comment
+      } 
+
+  2. Nested Comments
+  ==================
+  
+    The characters "/*" and "*/" also delimit comments. "/*...*/"-style
+    comments may be nested. 
+    
+    Example: 
+    
+      def g(y : int) : int { /*this is the start of a comment
+                               still comment
+			       ...
+			       still comment
+			       /*nested comment*/
+                              */
+      }
+
+
+Precedences and Associativity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The order of precedence for the operators (from lowest,
+  binds least tightly, to highest, binds most tightly) is:
+
+    ||
+    &&
+    <, ==  
+    +, -
+    *, /
+    -, not, !
+
+  Operators listed on the same line have the same precedence.
+
+  Semicolon (;) associates to the right.
+  || and && are left-associative.
+  < and == are not associative.
+  + and - are left-associative.
+  * and / are left-associative.
+
+  In addition, the following expressions are parsed as follows:
+
+    let x = e1 in e2; e3      =     let x = e1 in (e2; e3)
+    let x = e1 in e2 := e3    =     let x = e1 in (e2 := e3)
+    if e1 then e2 else e3; e4 =     if e1 then e2 else (e3; e4)
+    
+  The "ref" keyword binds tighter than (:=). 
+  Both "ref" and (:=) bind tighter than (;).
+
+
+Short-circuit Boolean Operators || and &&
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Like in C (and in many other languages), the boolean operators || and &&
+  have short-circuit evaluation behavior. That is, in the evaluation of an
+  expression 
+
+    e1 || e2
+
+  [e2] is not evaluated unless [e1] evaluates to [false]. Likewise, in the
+  expression 
+
+    e1 && e2
+
+  [e2] is not evaluated unless [e1] evaluates to [true].
+
+
+Lifetimes and Scope
+~~~~~~~~~~~~~~~~~~
+
+  Let-bound identifiers and function parameters live until the end of
+  the block within which they were allocated (in other words, to the
+  end of their static scope). For example, while the following Grumpy
+  program is legal:
+
+    def f(x:int, y:bool) : int {   // -+ x and y go into scope
+      let z = ref x in             // -+ z goes into scope
+      {                            //  |
+        let w = !z in              // ---+ w goes into scope
+        z := w + 1                 //  | |
+      };                           // ---+ w goes out of scope
+      !z + 1                       //  |
+    }                              // -+ x,y, and z go out of scope
+    f(3, false)
+
+  the following is not:
+
+    def g(x:int, y:bool) : int {   // -+ x and y go into scope
+      let z = ref x in             // -+ z goes into scope
+      {                            //  |
+        let w = !z in              // ---+ w goes into scope
+        z := w + 1                 //  | |
+      };                           // ---+ w goes out of scope
+      w + 1                        //  |   ERROR! w not in scope 
+    }                              // -+ x,y, and z go out of scope
+    g(3, false)
+
+  In the above two programs, the { let w = !z; ... } introduces
+  a nested scope corresponding to the lifetime of the let-bound
+  variable w.
+
+  As a second example, note that the following program:
+
+    def h() : int ref {            // -+
+      let x = ref 1 in             // -+ x and its associated ref cell go into scope 
+      x                            //  |
+    }                              // -+ x and its ref cell go out of scope
+    !h() + 1                       //    ERROR! attempt to access x's ref cell
+
+  contains an error: references allocated within a scope (here x is
+  allocated within the scope of the body of function h) are assumed to
+  be deallocated at the end of their scope. This restriction makes it
+  possible to allocate references within function activation records.
+
+  Function names are bound within the bodies of their definitions (to
+  support recursive function definitions) and at any point within a
+  Grumpy program after the function definition. Valid Grumpy programs
+  never define the same function name twice.
+
+
+Compiler Intrinsics
+~~~~~~~~~~~~~~~~~~
+
+  putchar(int) : unit
+  ===================
+  The [putchar] function prints an integer in the range [0..2^8-1] to
+  stdout and returns the unit value.
+
+  If the integer argument supplied to [putchar] is not in the 8-bit
+  character range given above, the result is undefined.
+
+
+Type System
+~~~~~~~~~~
+
+Arithmetic Types
+
+  arithtype(int)   = True
+  arithtype(float) = True
+  arithtype(_)     = False	   
+
+Unop Types
+
+  \forall t. arithtype(t) -> unoptype(-) = t -> t
+  unoptype(~) = bool -> bool
+  unoptype(!) = ty ref -> ty
+
+    I.e., the unary operator (-) takes an int as argument 
+    and produces an int as result.
+
+Binop Types
+
+  \forall t. arithtype(t) -> binoptype(+) = t -> t -> t
+  \forall t. arithtype(t) -> binoptype(-) = t -> t -> t
+  \forall t. arithtype(t) -> binoptype(*) = t -> t -> t
+  \forall t. arithtype(t) -> binoptype(/) = t -> t -> t
+
+    I.e., for any arithmetic type t, the binary operator (+) 
+    takes two t's as arguments and produces a t as result. 
+
+  binoptype(&&) = bool -> bool -> bool
+  binoptype(||) = bool -> bool -> bool
+  \forall t. arithtype(t) -> binoptype(<)  = t -> t -> bool
+  binoptype(==) = int -> int -> bool
+  binoptype(:=) = ty ref -> ty -> unit
+  
+Contexts 
+
+  G ::= .                  (* the empty variable typing context *)
+      | (id:ty), G         (* the extended context in which id has type ty *)
+
+  D ::= .                               (* the empty function typing context *)
+      | (id:(ty1,...,tyN),ty), D        (* the extended context in which function name
+                                           id has arguments of types ty1,...,tyN and
+   				           returns a value of type ty *)
+
+Typing Rules, Expressions 
+
+  (id,ty) \in G 
+  ------------------------------------------------------- T_Id
+  G;D |- id : ty
+
+  
+  ------------------------------------------------------- T_Int
+  G;D |- num_int : int
+
+
+  ------------------------------------------------------- T_Float
+  G;D |- num_float : float
+
+
+  G;D |- exp1 : unit      G;D |- exp2 : ty
+  ------------------------------------------------------- T_Seq
+  G;D |- exp1; exp2 : ty
+
+
+  (f,(ty1,...,tyN),ty) \in D
+  G;D |- exp1 : ty1 ... G;D |- expN : tyN
+  ------------------------------------------------------- T_Call
+  G;D |- f(exp1, ..., expN) : ty
+
+
+  G;D |- exp1 : ty
+  ------------------------------------------------------- T_Ref
+  G;D |- ref exp1 : ty ref
+
+
+  unoptype(unop) = ty1 -> ty2    G;D |- exp1 : ty1
+  ------------------------------------------------------- T_Unop
+  G;D |- unop exp1 : ty2
+
+
+  binoptype(binop) = ty1 -> ty2 -> ty3    
+  G;D |- exp1 : ty1              
+  G;D |- exp2 : ty2
+  ------------------------------------------------------- T_Binop
+  G;D |- exp1 binop exp2 : ty3
+
+
+  G;D |- exp1 : bool    G;D |- exp2 : ty    G;D |- exp3 : ty
+  ------------------------------------------------------- T_If
+  G;D |- if exp1 then exp2 else exp3 : ty
+
+
+  G;D |- exp1 : bool    G;D |- exp2 : unit
+  ------------------------------------------------------- T_While
+  G;D |- while exp1 do exp2 : unit
+
+
+  G;D |- exp1 : ty1      (id:ty1),G;D |- exp2 : ty2
+  ------------------------------------------------------- T_Let
+  G;D |- let id = exp1 in exp2 : ty2
+
+
+  ------------------------------------------------------- T_Unit
+  G;D |- tt : unit
+
+
+Typing Rules, Function Definitions
+
+  We introduce a new typing judgment, of the form 
+
+    G;D |-fun (def f(...) : ty { exp })
+
+  (note the "fun" in |-fun, which distinguishes this 
+  typing judgment from the plain turnstile "|-" judgment 
+  above) to express the following: 
+
+    "In type-variable context G and global context D,
+     function f, with arguments ... and body exp is 
+     well-typed at return type ty."
+
+
+  (id1:ty1), ..., (idN:tyN), G;
+  (f:(ty1,...,tyN),ty), D |- exp : ty  
+  ------------------------------------------------------- T_FunDef
+  G;D |-fun (def f(id1:ty1, ..., idN:tyN) : ty { exp })
+
+
+Typing Rules, Programs
+
+  Similarly, we introduce a second new typing judgment, written
+    "G;D |-prog f1 f2 ... fN exp"
+  to express that program "f1 f2 ... fN exp" is well-typed. 
+  (Every function definition is well-typed, the final expression 
+  exp is well-typed.)
+
+  G;D |- exp : ty
+  ------------------------------------------------------- T_nil
+  G;D |-prog (*no fundefs*) exp : ty
+
+
+  G;D |-fun (def f1(...) : ty1 { ... })
+  G; (f1:(ty11,...,ty1N),ty1), D
+    |-prog (def f2(...) : ty2 { ... }) ...
+           (def fM(...) : tyM { ... }) exp : ty
+  ------------------------------------------------------- T_cons
+  G;D |-prog (def f1(id1:ty11,...,idN:ty1N) : ty1 { ... })
+             (def f2(...) : ty2 { ... }) ...
+             (def fM(...) : tyM { ... }) exp : ty

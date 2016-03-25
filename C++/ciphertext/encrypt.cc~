@@ -1,0 +1,110 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+int main(int argc,char *argv[]) {
+  string key;
+  vector<int> standardFrequencies;
+  vector<int> plaintextFrequencies;
+  vector<int> freqIndeces;
+  vector<string> keys;
+  int n, m, lines;
+
+  cin >> key; // Assuming key has no spaces
+  ifstream freqIn, wordIn;
+  freqIn.open("standard_freq.dat");
+  wordIn.open("words");
+
+  if(freqIn.fail()){
+    cout << "Failed to open standar_freq.dat" << endl;
+    exit(-1);
+  }
+  else if(wordIn.fail()){
+    cout << "Failed to open words" << endl;
+    exit(-1);
+  }
+  
+  int cnt = 0;
+  
+  //Populating the standarFrequencies vector
+  while(freqIn >> n >> m){
+    if(m == 840280 || n == 840280 )
+      cnt = n;
+    else{
+      standardFrequencies.push_back(n);
+      freqIndeces.push_back(m);
+    }
+  }
+  freqIn.close();
+  
+  for(int i = 0; i < standardFrequencies.size(); i++){
+    ;
+  }
+  lines = standardFrequencies.size();
+
+  string w;
+  //filling up an array full of words
+  while(wordIn >> w){
+    keys.push_back(w);
+  }
+  wordIn.close();
+
+  //initializing the plaintext vector to be all 0's so I can
+  //increment values later
+  for(int i = 0; i <= standardFrequencies.size(); i++){
+    plaintextFrequencies.push_back(0);
+  }
+
+  //Reading in the plain text file each iteration through the out for loop.
+  //This compares the current i in the standardFrequencies vector to the current character in
+  //the plaintext file. If it is the same, I increment the spot in plaintextFrequencies to
+  //get a frequeciy of that character, assuming that the standard frequencies are ASCII numbers
+  //representing characters. 
+  for(int i = 0; i < standardFrequencies.size(); i++){
+    ifstream fin;
+    fin.open(argv[1]);
+
+    if (fin.fail()) {
+      cout << "Failed to open " << argv[1] << endl;
+      exit(-1);
+     }
+    
+    while(!fin.eof()){
+      char c = fin.get();
+      if((int) c == i){
+	plaintextFrequencies[i] = plaintextFrequencies[i] + 1;
+      }
+    }
+   
+  }
+
+  int fd = 0;
+  for(int i = 0; i < 256; i++){
+    fd = fd + (pow((plaintextFrequencies[i] - standardFrequencies[i]), 2));
+  }
+
+  cout << "Frequency Difference: " << fd <<endl;
+
+  //Beginning of the original code
+  ifstream fin;
+  fin.open(argv[1]);
+
+  if (fin.fail()) {
+    cout << "Failed to open " << argv[1] << endl;
+    exit(-1);
+  }
+  
+  int count = 0;
+  while (!fin.eof()) {
+    char c;
+    c = fin.get();
+    if (!fin.fail()) {
+      cout << char(c^key[count%key.size()]);
+    }
+    count++;
+  }
+}

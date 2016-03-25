@@ -1,0 +1,7 @@
+def even(x : int) :
+ bool {
+ ((if (((x : int) == (0 : int)) : bool) then (true : bool) else
+ (even((((x : int) - (2 : int)) : int)) : bool)) : bool)
+}
+(even((100 : int)) : bool)
+

@@ -1,0 +1,9 @@
+def f(x : int, y : bool) :
+ int {
+ ((let z = ((ref (x : int)) : int ref) in (({ ((let w = (! (z : int
+ ref) : int) in (((z : int
+ ref) := (((w : int) + (1 : int)) : int)) : unit)) : unit)
+ } : unit); (((! (z : int ref) : int) + (1 : int)) : int) : int)) : int)
+}
+(f((3 : int), (false : bool)) : int)
+
